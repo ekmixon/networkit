@@ -39,8 +39,8 @@ class GephiStreamingClient:
 		""" Return the edge id that is exported to Gephi
 		"""
 		if self.directed:
-			return str(u) + '->' + str(v)
-		return str(min(u,v)) + '-' + str(max(u,v))
+			return f'{str(u)}->{str(v)}'
+		return f'{str(min(u,v))}-{str(max(u,v))}'
 
 	def exportGraph(self, graph):
 		""" 

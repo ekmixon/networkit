@@ -34,7 +34,7 @@ def nx2nk(nxG, weightAttr=None):
 	if not have_nx:
 		raise MissingDependencyError("networkx")
 	# map networkx node ids to consecutive numerical node ids
-	idmap = dict((id, u) for (id, u) in zip(nxG.nodes(), range(nxG.number_of_nodes())))
+	idmap = dict(zip(nxG.nodes(), range(nxG.number_of_nodes())))
 	z = max(idmap.values()) + 1
 	# print("z = {0}".format(z))
 
@@ -71,10 +71,7 @@ def nk2nx(nkG):
 	if not have_nx:
 		raise MissingDependencyError("networkx")
 
-	if nkG.isDirected():
-		nxG = nx.DiGraph()
-	else:
-		nxG = nx.Graph()
+	nxG = nx.DiGraph() if nkG.isDirected() else nx.Graph()
 	nxG.add_nodes_from(nkG.iterNodes())
 	if nkG.isWeighted():
 		for u, v, w in nkG.iterEdgesWeights():

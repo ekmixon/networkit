@@ -16,7 +16,7 @@ class GEXFReader:
 	"""
 	def __init__(self):
 		""" Initializes the GEXFReader class """
-		self.mapping = dict()
+		self.mapping = {}
 		self.g = Graph(0)
 		self.weighted = False
 		self.directed = False
@@ -181,20 +181,19 @@ class GEXFReader:
 
 		if startTime != "" and endTime != "":
 			if startTime < endTime and not controlList['elementDeleted']:
-				self.createEvent(startTime, "a"+elementType, u, v, w)
+				self.createEvent(startTime, f"a{elementType}", u, v, w)
 				controlList['elementAdded'] = True
 			else:
-				self.createEvent(startTime, "r"+elementType, u, v, w)
-			self.createEvent(endTime, "d"+elementType, u, v, w)
+				self.createEvent(startTime, f"r{elementType}", u, v, w)
+			self.createEvent(endTime, f"d{elementType}", u, v, w)
 			controlList['elementDeleted'] = True
 
 		if startTime != "" and endTime == "":
 			if controlList['elementDeleted']:
-				self.createEvent(startTime, "r"+elementType, u, v, w)
+				self.createEvent(startTime, f"r{elementType}", u, v, w)
 			else:
-				self.createEvent(startTime, "a"+elementType, u, v, w)
+				self.createEvent(startTime, f"a{elementType}", u, v, w)
 				controlList['elementAdded'] = True
-
 	 	# Handle dynamic edge weights here
 		if elementType == "e" and self.hasDynamicWeights:
 			attvalues = element.getElementsByTagName("attvalue")
@@ -211,10 +210,10 @@ class GEXFReader:
 						startTime = float(startTime)
 					# If this edge is not added, first weight update indicates edge addition
 					if not controlList['elementAdded']:
-						self.createEvent(startTime, "a"+elementType, u, v, w)
+						self.createEvent(startTime, f"a{elementType}", u, v, w)
 						controlList['elementAdded'] = True
 					else:
-						self.createEvent(startTime, "c"+elementType, u, v, w)
+						self.createEvent(startTime, f"c{elementType}", u, v, w)
 
 		if startTime == "":
 			if not controlList['elementAdded']:
@@ -225,7 +224,7 @@ class GEXFReader:
 					self.q.put((u,v,w))
 				controlList['elementAdded'] = True
 			if endTime != "":
-				self.createEvent(endTime, "d"+elementType, u, v, w)
+				self.createEvent(endTime, f"d{elementType}", u, v, w)
 				controlList['elementDeleted'] = True
 
 	def createEvent(self, eventTime, eventType, u, v, w):
@@ -258,7 +257,7 @@ class GEXFReader:
 			event = GraphEvent(GraphEvent.NODE_REMOVAL, u, 0, 0)
 		elif eventType == "rn":
 			event = GraphEvent(GraphEvent.NODE_RESTORATION, u, 0, 0)
-		elif eventType == "ae" or eventType == "re":
+		elif eventType in ["ae", "re"]:
 			event = GraphEvent(GraphEvent.EDGE_ADDITION, u, v, w)
 		elif eventType == "de":
 			event = GraphEvent(GraphEvent.EDGE_REMOVAL, u, v, w)
@@ -284,7 +283,7 @@ class GEXFReader:
 		nEvent = len(self.eventStream)
 		isMapped = [False] * nEvent
 		self.eventStream.sort(key=lambda x:x[1])
-		for i in range(0, nEvent):
+		for i in range(nEvent):
 			event = self.eventStream[i]
 			# Only the nodes with addition event will get remapped.
 			if not isMapped[i] and event[0].type == GraphEvent.NODE_ADDITION:
@@ -309,11 +308,7 @@ class GEXFReader:
 		dict(int ``:`` int)
 			Dictionary containing mapping from GEXF ID to node ID
 		"""
-		forwardMap = dict()
-		for key in self.mapping:
-			if type(key) == str:
-				forwardMap[key] = self.mapping[key]
-		return forwardMap
+		return {key: self.mapping[key] for key in self.mapping if type(key) == str}
 
 
 # GEXFWriter
@@ -387,15 +382,13 @@ class GEXFWriter:
 			if event.type == GraphEvent.NODE_ADDITION:
 				nNodes +=1
 		nNodes += graph.numberOfNodes()
-		for i in range(0, nNodes):
-			idArray.append(i)
+		idArray.extend(iter(range(nNodes)))
 		# Optional:Map nodes to a random mapping if user provided one
 		if (len(mapping) > 0):
-			if(nNodes != len(mapping)):
-				 raise Exception('Size of nodes and mapping must match')
-			else:
-				for i in range(0, nNodes):
-					idArray[i] = mapping[i]
+			if nNodes != len(mapping):
+				raise Exception('Size of nodes and mapping must match')
+			for i in range(nNodes):
+				idArray[i] = mapping[i]
 
 		#3.2 Write nodes to the gexf file
 		for n in range(nNodes):
@@ -460,7 +453,6 @@ class GEXFWriter:
 			else:
 				matched = (event.type in edgeEvents and (event.u == graphElement[0] and event.v == graphElement[1]))
 			if matched:
-				# Handle weight update seperately
 				if event.type == GraphEvent.EDGE_WEIGHT_UPDATE:
 					if not weightTag:
 						attvaluesElement = ET.SubElement(xmlElement, "attvalues")
@@ -471,10 +463,7 @@ class GEXFWriter:
 					attvalue.set('start', str(timeStep))
 					attvalue.set('endopen', str(timeStep + 1))
 				else:
-					if event.type in startEvents:
-						operation = "start"
-					else:
-						operation = "end"
+					operation = "start" if event.type in startEvents else "end"
 					if not spellTag:
 						spellsElement = ET.SubElement(xmlElement, "spells")
 						spellTag = True

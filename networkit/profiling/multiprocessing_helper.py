@@ -35,8 +35,8 @@ class Worker(multiprocessing.Process):
 			try:
 				data = task.run()
 			except Exception as e:
-				print("Error: " + task.getType() + " - " + task.getName(), flush=True)
-				print(str(e), flush=True)
+				print(f"Error: {task.getType()} - {task.getName()}", flush=True)
+				print(e, flush=True)
 				print(traceback.format_exc(), flush=True)
 			result = (task.getType(), task.getName(), data)
 			self.__tasks.task_done()
@@ -85,7 +85,11 @@ class ThreadPool():
 		if self.__isParallel:
 			self.__tasks = multiprocessing.JoinableQueue()
 			self.__results = multiprocessing.Queue()
-			self.__workers = [Worker(self.__tasks, self.__results) for i in range(self.__numberOfWorkers)]
+			self.__workers = [
+				Worker(self.__tasks, self.__results)
+				for _ in range(self.__numberOfWorkers)
+			]
+
 			count = 0
 			for w in self.__workers:
 				w.deamon = True
@@ -140,8 +144,8 @@ class ThreadPool():
 			try:
 				data = task.run()
 			except Exception as e:
-				print("Error: " + task.getType() + " - " + task.getName(), flush=True)
-				print(str(e), flush=True)
+				print(f"Error: {task.getType()} - {task.getName()}", flush=True)
+				print(e, flush=True)
 				print(traceback.format_exc(), flush=True)
 				data = None
 			result = (task.getType(), task.getName(), data)
@@ -152,7 +156,7 @@ class ThreadPool():
 	def join(self):
 		""" wait for workers to finish and close ThreadPool """
 		if self.__isParallel:
-			for i in range(self.__numberOfWorkers):
+			for _ in range(self.__numberOfWorkers):
 				self.__tasks.put(None)
 			self.__tasks.join()
 			self.__tasks.close()

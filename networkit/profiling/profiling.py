@@ -45,7 +45,7 @@ def getfilepath(filename):
 	filename : str
 		Name of file.
 	"""
-	filepath = os.path.abspath(os.path.dirname(__file__)) + "/" + filename
+	filepath = f"{os.path.abspath(os.path.dirname(__file__))}/{filename}"
 	if sys.platform == "win32":
 		return PureWindowsPath(filepath)
 	else:
@@ -77,40 +77,66 @@ try:
 
 	def _initHeader(tag, docType, data):
 		""" private helper function for ipython/jupyter-notebook hack: create content of extended header """
-		result = """
+		return (
+			"""
 			{
-				var element = document.getElementById('NetworKit_""" + tag + """');
+				var element = document.getElementById('NetworKit_"""
+			+ tag
+			+ """');
 				if (element) {
 					element.parentNode.removeChild(element);
 				}
-				element = document.createElement('""" + tag + """');
-				element.type = 'text/""" + docType + """';
-				element.innerHTML = '""" + data + """';
-				element.setAttribute('id', 'NetworKit_""" + tag + """');
+				element = document.createElement('"""
+			+ tag
+			+ """');
+				element.type = 'text/"""
+			+ docType
+			+ """';
+				element.innerHTML = '"""
+			+ data
+			+ """';
+				element.setAttribute('id', 'NetworKit_"""
+			+ tag
+			+ """');
 				document.head.appendChild(element);
 			}
 		"""
-		return result
+		)
 
 
 	def _initOverlay(name, data):
 		""" private helper function for ipython/jupyter-notebook hack: create content of overlay """
-		result = """
+		return (
+			"""
 			{
-				var element = document.getElementById('NetworKit_""" + name + """');
+				var element = document.getElementById('NetworKit_"""
+			+ name
+			+ """');
 				if (element) {
 					element.parentNode.removeChild(element);
 				}
 				element = document.createElement('div');
-				element.innerHTML = '<div id="NetworKit_""" + name + """_Toolbar_Top"><div class="button icon-close" id="NetworKit_""" + name + """_Close" /></div>""" + data + """';
-				element.setAttribute('id', 'NetworKit_""" + name + """');
+				element.innerHTML = '<div id="NetworKit_"""
+			+ name
+			+ """_Toolbar_Top"><div class="button icon-close" id="NetworKit_"""
+			+ name
+			+ """_Close" /></div>"""
+			+ data
+			+ """';
+				element.setAttribute('id', 'NetworKit_"""
+			+ name
+			+ """');
 				document.body.appendChild(element);
-				document.getElementById('NetworKit_""" + name + """_Close').onclick = function (e) {
-					document.getElementById('NetworKit_""" + name + """').style.display = 'none';
+				document.getElementById('NetworKit_"""
+			+ name
+			+ """_Close').onclick = function (e) {
+					document.getElementById('NetworKit_"""
+			+ name
+			+ """').style.display = 'none';
 				}
 			}
 		"""
-		return result
+		)
 
 	# load headers/scripts
 	display_html(
@@ -387,7 +413,7 @@ class Profile:
 		self.__measures = collections.OrderedDict()
 		self.__correlations = {}
 
-		self.__token = ''.join(random.choice('0123456789abcdef') for n in range(16))
+		self.__token = ''.join(random.choice('0123456789abcdef') for _ in range(16))
 
 
 
@@ -666,7 +692,7 @@ class Profile:
 		options_type = ["HTML", "LaTeX", None]
 		for o in options_type:
 			if o is None:
-				raise ValueError("unknown output type: options are " + str(options_type[0:len(options_type)-1]))
+				raise ValueError(f"unknown output type: options are {str(options_type[:-1])}")
 			if o == outputType:
 				break
 
@@ -708,15 +734,12 @@ class Profile:
 			filename += "html"
 		elif outputType == "LaTeX":
 			result = result
-			if directory[-1] == "/":
-				directory += filename[:-1]
-			else:
-				directory += "/" + filename[:-1]
+			directory += filename[:-1] if directory[-1] == "/" else f"/{filename[:-1]}"
 			filename += "tex"
 		else:
 			raise Error("unknown output type")
 
-		with open(directory + "/" + filename, 'w') as file:
+		with open(f"{directory}/{filename}", 'w') as file:
 			file.write(result)
 
 

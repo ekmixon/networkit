@@ -17,8 +17,7 @@ def exportNodeValues(values, fpath, column_name):
 	column_name : str
 		Name of the column as description for the data.
 	"""
-	f = open(fpath, "w+")
-	f.write("id,{0}\n".format(column_name))
-	for i in range(0,len(values)):
-		f.write("{0},{1}\n".format(i,values[i]))
-	f.close()
+	with open(fpath, "w+") as f:
+		f.write("id,{0}\n".format(column_name))
+		for i in range(len(values)):
+			f.write("{0},{1}\n".format(i,values[i]))

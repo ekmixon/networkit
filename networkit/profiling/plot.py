@@ -31,13 +31,12 @@ class Theme:
 	@classmethod
 	def RGBA2RGB(cls, color, alpha, background):
 		""" converts a color with an given alpha to RGB for an fixed RGB background color """
-		result = (
-			color[0] * alpha + background[0] * (1-alpha),
-			color[1] * alpha + background[1] * (1-alpha),
-			color[2] * alpha + background[2] * (1-alpha),
-			1
+		return (
+			color[0] * alpha + background[0] * (1 - alpha),
+			color[1] * alpha + background[1] * (1 - alpha),
+			color[2] * alpha + background[2] * (1 - alpha),
+			1,
 		)
-		return result
 
 
 	def set(self, style="light", color=(0, 0, 1)):
@@ -51,7 +50,7 @@ class Theme:
 			raise MissingDependencyError("matplotlib")
 		optionsStyle = ["light", "system"]
 		if style not in optionsStyle:
-			raise ValueError("possible style options: " + str(optionsStyle))
+			raise ValueError(f"possible style options: {optionsStyle}")
 		if len(color) != 3:
 			raise ValueError("(r,g,b) tuple required")
 
@@ -197,12 +196,9 @@ class PlotJob(job.Job):
 
 		elif self.__plottype == "PDF":
 			filename = self.__options[1] + extention
-			with PdfPages(self.__options[0] + "/" + filename + ".pdf") as pdf:
+			with PdfPages(f"{self.__options[0]}/{filename}.pdf") as pdf:
 				pdf.savefig(fig)
 			result = filename
-
-		else:
-			pass
 
 		plt.close(fig)
 		return (id, result)
@@ -272,10 +268,7 @@ class Measure(PlotJob):
 				ax.set_yticklabels([])
 			ax.grid(showGrid, which="both", color=theme.getGridColor(), linestyle="-")
 			ax.patch.set_facecolor(theme.getBackgroundColor())
-			if drawAxis:
-				axisColor = theme.getGridColor()
-			else:
-				axisColor = theme.getBackgroundColor()
+			axisColor = theme.getGridColor() if drawAxis else theme.getBackgroundColor()
 			ax.spines["bottom"].set_color(axisColor)
 			ax.spines["top"].set_color(axisColor)
 			ax.spines["right"].set_color(axisColor)
@@ -287,6 +280,7 @@ class Measure(PlotJob):
 			[x_ticklabel.set_color(theme.getFontColor()) for x_ticklabel in ax.get_xticklabels()]
 			[y_ticklabel.set_color(theme.getFontColor()) for y_ticklabel in ax.get_yticklabels()]
 			fig.set_size_inches(width, height)
+
 
 
 		def funcPlotBox(ax):
@@ -457,11 +451,7 @@ class Measure(PlotJob):
 						t >= 330 and i%2 == 1
 					)):
 						labelRadius = radius * 1.19
-				if accumulator + alpha/2 > 180:
-					ha = "left"
-				else:
-					ha = "right"
-
+				ha = "left" if accumulator + alpha/2 > 180 else "right"
 				if i == 0:
 					ax.add_patch(patches.Wedge(
 						(math.cos(math.pi/180 * (90 + alpha/2)) * radius * 0.1,
@@ -504,6 +494,7 @@ class Measure(PlotJob):
 			ax.set_xticks([])
 			ax.set_yticks([])
 			return ax
+
 
 
 		if index == 0:
@@ -586,11 +577,7 @@ class Measure(PlotJob):
 			)
 			plottype = "pie"
 
-		return self.save(
-			index,
-			fig,
-			plottype + "-" + category + "-" + name
-		)
+		return self.save(index, fig, f"{plottype}-{category}-{name}")
 
 
 class Scatter(PlotJob):
@@ -667,8 +654,4 @@ class Scatter(PlotJob):
 
 		fig.set_size_inches(4, 3.75)
 
-		return self.save(
-			name,
-			fig,
-			"scatter." + nameA + " - " + nameB
-		)
+		return self.save(name, fig, f"scatter.{nameA} - {nameB}")

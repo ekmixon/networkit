@@ -45,11 +45,13 @@ class Stat(job.Job):
 		def funcMin():
 			result = sampleSorted[0]
 			return result
+
 		results["Location"]["Min"] = min = funcMin()
 
 		def funcMax():
 			result = sampleSorted[n-1]
 			return result
+
 		results["Location"]["Max"] = max = funcMax()
 
 		def funcBesselsCorrection():
@@ -58,6 +60,7 @@ class Stat(job.Job):
 			except:
 				result = float("nan")
 			return result
+
 		results["Properties"]["Bessel's Correction"] = besselsCorrection = funcBesselsCorrection()
 
 		def hoelderMean(sample, p):
@@ -67,6 +70,7 @@ class Stat(job.Job):
 			result /= n
 			result **= 1 / p
 			return result
+
 		results["Location"]["Arithmetic Mean"] = arithmeticMean = hoelderMean(sample, 1)
 		results["Location"]["Quadratic Mean"] = quadraticMean = hoelderMean(sample, 2)
 		results["Location"]["Cubic Mean"] = cubicMean = hoelderMean(sample, 3)
@@ -78,6 +82,7 @@ class Stat(job.Job):
 		def funcArithmeticMeanRank():
 			result = (n + 1) / 2
 			return result
+
 		results["Location"]["Arithmetic Mean (Rank)"] = arithmeticMean_Rank = funcArithmeticMeanRank()
 
 		def funcUncorrectedVariance(sample, arithmeticMean):
@@ -86,18 +91,21 @@ class Stat(job.Job):
 				result += (sample[i] - arithmeticMean) ** 2
 			result /= n
 			return result
+
 		results["Dispersion"]["Uncorrected Variance"] = variance_uncorrected = funcUncorrectedVariance(sample, arithmeticMean)
 		results["Dispersion"]["Uncorrected Variance (Rank)"] = variance_Rank_uncorrected = funcUncorrectedVariance(sampleRanked, arithmeticMean_Rank)
 
 		def funcVariance(variance_uncorrected):
 			result = variance_uncorrected * besselsCorrection
 			return result
+
 		results["Dispersion"]["Variance"] = variance = funcVariance(variance_uncorrected)
 		results["Dispersion"]["Variance (Rank)"] = variance_Rank = funcVariance(variance_Rank_uncorrected)
 
 		def funcStandardDeviation(variance):
 			result = math.sqrt(variance)
 			return result
+
 		results["Dispersion"]["Standard Deviation"] = s_n = funcStandardDeviation(variance)
 		results["Dispersion"]["Standard Deviation (Rank)"] = s_n_Rank = funcStandardDeviation(variance_Rank)
 		results["Dispersion"]["Uncorrected Standard Deviation"] = s_n_uncorrected = funcStandardDeviation(variance_uncorrected)
@@ -108,11 +116,12 @@ class Stat(job.Job):
 			if arithmeticMean != 0:
 				result = s_n / arithmeticMean
 			return result
+
 		results["Dispersion"]["Coefficient Of Variation"] = c_v = funcCoefficientOfVariation(s_n, arithmeticMean)
 		results["Dispersion"]["Coefficient Of Variation (Rank)"] = c_v_Rank = funcCoefficientOfVariation(s_n_Rank, arithmeticMean_Rank)
 		results["Dispersion"]["Uncorrected Coefficient Of Variation"] = c_v = funcCoefficientOfVariation(s_n_uncorrected, arithmeticMean)
 		results["Dispersion"]["Uncorrected Coefficient Of Variation (Rank)"] = c_v_Rank = funcCoefficientOfVariation(s_n_Rank_uncorrected, arithmeticMean_Rank)
-		
+
 		def funcAlphaQuartile(alpha):
 			k_real = (alpha * n)
 			k = math.floor(k_real)
@@ -121,6 +130,7 @@ class Stat(job.Job):
 			else:
 				result = 0.5 * (sampleSorted[(k-1)] + sampleSorted[(k-1)+1])
 			return result
+
 		results["Location"]["1st Quartile"] = Q1 = funcAlphaQuartile(0.25)
 		results["Location"]["Median"] = median = funcAlphaQuartile(0.5)
 		results["Location"]["3rd Quartile"] = Q3 = funcAlphaQuartile(0.75)
@@ -134,21 +144,25 @@ class Stat(job.Job):
 				i += 1
 			result /= n	- 2*(k)
 			return result
+
 		results["Location"]["Interquartile Mean"] = IQM = funcAlphaTrimmedMean(0.25)
 
 		def funcIQR():
 			result = Q3 - Q1
 			return result
+
 		results["Dispersion"]["Interquartile Range"] = IQR = funcIQR()
 
 		def funcSampleRange():
 			result = max - min
 			return result
+
 		results["Dispersion"]["Sample Range"] = sampleRange = funcSampleRange()
 
 		def funcMidRange():
 			result = (min + max)/ 2
 			return result
+
 		results["Location"]["Mid-Range"] = midRange = funcMidRange()
 
 		def funcSkewnessYP():
@@ -156,6 +170,7 @@ class Stat(job.Job):
 			if s_n != 0:
 				result = 3 * (arithmeticMean - median) / s_n
 			return result
+
 		results["Shape"]["Skewness YP"] = skewness_yp = funcSkewnessYP()
 
 		def funcMomentum(p):
@@ -170,11 +185,13 @@ class Stat(job.Job):
 		def funcSkewnessM():
 			result = funcMomentum(3)
 			return result
+
 		results["Shape"]["Skewness M"] = skewnewss_m = funcSkewnessM()
 
 		def funcKurtosis():
 			result = funcMomentum(4) - 3
 			return result
+
 		results["Shape"]["Kurtosis"] = kurtosis = funcKurtosis()
 
 		def funcNumberOfBins(commulative):
@@ -189,6 +206,7 @@ class Stat(job.Job):
 					elif (result > 20):
 						result = 20
 			return int(result)
+
 		results["Binning"]["Number Histogram"] = k_Bins_Histogram = funcNumberOfBins(False)
 		k_Bins_CDF = funcNumberOfBins(True)
 
@@ -200,6 +218,7 @@ class Stat(job.Job):
 				result.append(min + w * i)
 			result.append(max if min < max else max+10e-12)
 			return result
+
 		results["Binning"]["Intervals Histogram"] = intervalsHistogram = funcIntervals(k_Bins_Histogram)
 		intervalsCDF = funcIntervals(k_Bins_CDF)
 
@@ -216,6 +235,7 @@ class Stat(job.Job):
 						result[index] = result[index-1]
 				result[index] += 1
 			return result
+
 		results["Binning"]["Absolute Frequencies Histogram"] = absoluteFrequenciesHistogram = funcBinAbsoluteFrequencies(k_Bins_Histogram, intervalsHistogram, False)
 		absoluteFrequenciesCDF = funcBinAbsoluteFrequencies(k_Bins_CDF, intervalsCDF, True)
 
@@ -230,6 +250,7 @@ class Stat(job.Job):
 				if commulative:
 					value = frequencies[k_Bin-i-1]
 			return result
+
 		results["Binning"]["Number CDF"] = k_Bins_CDF = funcJoinEmptyBins(k_Bins_CDF, intervalsCDF, absoluteFrequenciesCDF, True)
 		results["Binning"]["Absolute Frequencies CDF"] = absoluteFrequenciesCDF
 		results["Binning"]["Intervals CDF"] = intervalsCDF
@@ -239,6 +260,7 @@ class Stat(job.Job):
 			for H in absoluteFrequencies:
 				result.append(H / n)
 			return result
+
 		results["Binning"]["Relative Frequencies Histogram"] = relativeFrequenciesHistogram = funcBinRelativeFrequencies(absoluteFrequenciesHistogram)
 		results["Binning"]["Relative Frequencies CDF"] = relativeFrequenciesCDF = funcBinRelativeFrequencies(absoluteFrequenciesCDF)
 
@@ -251,6 +273,7 @@ class Stat(job.Job):
 					index = i
 			result = ((intervalsHistogram[index]+intervalsHistogram[index+1]) / 2, max)
 			return result
+
 		results["Binning"]["Mode"] = mode = funcMode()
 
 		def funcLowerOutliers():
@@ -268,6 +291,7 @@ class Stat(job.Job):
 					result_upper = value
 					break
 			return (result_lower, result_upper)
+
 		results["Location"]["Outlier (Lower)"] = funcLowerOutliers()
 
 		def funcUpperOutliers():
@@ -285,6 +309,7 @@ class Stat(job.Job):
 					result_lower = value
 					break
 			return (result_upper, result_lower)
+
 		results["Location"]["Outlier (Upper)"] = funcUpperOutliers()
 
 		if calculatePie:
@@ -343,11 +368,11 @@ class Stat(job.Job):
 		def funcDistributionExponential(x):
 			result = 1 - math.exp((-1/arithmeticMean) * x)
 			return result
-			
+
 		def funcDistributionExponentialInverse(x):
 			result = math.ln(1/(1-x))*arithmeticMean
 			return result
-			
+
 		def funcIncompleteGamma(s, x):
 			if x < 0.0:
 				return 0.0
@@ -382,33 +407,9 @@ class Stat(job.Job):
 
 		def funcNumberOfBinsChiSquaredTest():
 			result = 1 + math.ln(n)/math.ln(2)
-			if result > 128:
-				result = 128
+			result = min(result, 128)
 			return int(result)
-			
-		# TODO:
-		# def funcIntervalsChiSquaredTest(inverseFunction, min, max, k_Bins):
-			# bin_size = n / k
-			# result = []
-			# return result
-			
-		# def funcChiSquaredTest(distribution, numberOfUsedEstimators):
-			# z = 0;
-			# pValue = 0
-			# for i in range(k_Bins):
-				# p_i = distribution(intervals[i+1]) - distribution(intervals[i])
-				# hypotheticAbsoluteFrequency = n*p_i
-				# if hypotheticAbsoluteFrequency == 0:
-					# if absoluteFrequencies[i] == 0:
-						# continue
-					# z = float("Inf")
-					# break
-				# d = absoluteFrequencies[i] - hypotheticAbsoluteFrequency
-				# z += d*d / hypotheticAbsoluteFrequency
-				# print(self.getName(), hypotheticAbsoluteFrequency, absoluteFrequencies[i], z)
-			# degreesOfFreedom = (k_Bins - 1) - numberOfUsedEstimators
-			# pValue = funcPValue(z, degreesOfFreedom)
-			# return (z, pValue)
+
 		# results["Distribution"]["Chi-Square-Test (Normal)"] = funcChiSquaredTest(funcDistributionNormal, 2)
 		# results["Distribution"]["Chi-Square-Test (Exponential)"] = funcChiSquaredTest(funcDistributionExponential, 1)
 

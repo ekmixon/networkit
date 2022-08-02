@@ -102,7 +102,7 @@ class TestRandomization(unittest.TestCase):
         num_clockwise = 0
         num_iterations = 1000
 
-        for i in range(num_iterations):
+        for _ in range(num_iterations):
             dps = nk.randomization.DegreePreservingShuffle(G)
             dps.run()
             G2 = dps.getGraph()

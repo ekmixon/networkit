@@ -21,14 +21,14 @@ class TestGEXFIO(unittest.TestCase):
 		self.assertEqual(graph.isDirected(), graph2.isDirected())
 		self.assertEqual(graph.isWeighted(), graph2.isWeighted())
 		self.assertEqual(graph.numberOfNodes(), graph2.numberOfNodes())
-		self.assertEqual([(u, v) for u, v in graph.iterEdges()], [(u, v) for u, v in graph2.iterEdges()])
+		self.assertEqual(list(graph.iterEdges()), list(graph2.iterEdges()))
 
 	def checkDynamic(self, eventStream, eventStream2):
 		from networkit.dynamics import GraphEvent
 		self.assertEqual(len(eventStream), len(eventStream2))
 		#Check if timesteps are occuring at the same indexes
 		index = 0
-		for i in range(0, len(eventStream)):
+		for i in range(len(eventStream)):
 			event = eventStream[i]
 			event2 = eventStream2[i]
 			if event.type == GraphEvent.TIME_STEP:
@@ -72,14 +72,20 @@ class TestGEXFIO(unittest.TestCase):
 		G = nk.generators.ErdosRenyiGenerator(100, 0.1).generate()
 		someFailed = False
 
-		excluded_formats = set([nk.Format.KONECT, nk.Format.DOT, nk.Format.GraphViz, nk.Format.SNAP])
+		excluded_formats = {
+			nk.Format.KONECT,
+			nk.Format.DOT,
+			nk.Format.GraphViz,
+			nk.Format.SNAP,
+		}
+
 
 		for format in nk.Format:
 			if format in excluded_formats:
 				# format do not support both reading and writing
 				continue
 
-			filename = "output/testWriteGraphReadGraph." + str(format)
+			filename = f"output/testWriteGraphReadGraph.{str(format)}"
 			if format == nk.Format.MAT:
 				filename += ".mat" # suffix required
 

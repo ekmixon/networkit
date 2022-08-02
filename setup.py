@@ -9,8 +9,6 @@ from Cython.Build import cythonize
 cmakeCompiler = None
 buildDirectory = "build/build_python"
 ninja_available = False
-enable_osx_crossbuild = False
-
 if sys.version_info.major < 3:
 	print("ERROR: NetworKit requires Python 3.")
 	sys.exit(1)
@@ -21,15 +19,13 @@ if "CXX" in os.environ:
 if "NETWORKIT_OVERRIDE_CXX" in os.environ:
 	cmakeCompiler = os.environ["NETWORKIT_OVERRIDE_CXX"]
 
-if "NETWORKIT_OSX_CROSSBUILD" in os.environ:
-	enable_osx_crossbuild = True
-
+enable_osx_crossbuild = "NETWORKIT_OSX_CROSSBUILD" in os.environ
 if shutil.which("cmake") is None:
 	print("ERROR: NetworKit compilation requires cmake.")
 	sys.exit(1)
 
 ninja_available = shutil.which("ninja") is not None
-if not (ninja_available or shutil.which("make")):
+if not ninja_available and not shutil.which("make"):
 	print("ERROR: NetworKit compilation requires Make or Ninja.")
 	sys.exit(1)
 try:
@@ -70,8 +66,8 @@ sys.argv = [__file__] + args
 candidates = ["g++", "g++-8", "g++-7", "g++-6.1", "g++-6", "g++-5.5", "g++-5.4", "g++-5.3", "g++-5", "clang++", "clang++-3.9"]
 
 def determineCompiler(candidates, std, flags):
-	sample = open("sample.cpp", "w")
-	sample.write("""
+	with open("sample.cpp", "w") as sample:
+		sample.write("""
 	#include <omp.h>
 	#include <iostream>
 	void helloWorld() {
@@ -90,10 +86,8 @@ def determineCompiler(candidates, std, flags):
 			}
 		}
 	}""")
-	sample.close()
-
 	for compiler in candidates:
-		cmd = [compiler,"-o","test_build","-std={}".format(std)]
+		cmd = [compiler, "-o", "test_build", f"-std={std}"]
 		cmd.extend(flags)
 		cmd.append("sample.cpp")
 		try:
@@ -118,7 +112,18 @@ if cmakeCompiler is None:
 		try:
 			proc = subprocess.run(['brew','--prefix'], stdout=subprocess.PIPE)
 			brewPrefix = proc.stdout.decode('utf-8').strip()
-			cmakeCompiler = determineCompiler(["c++"], "c++14", ["-Xpreprocessor", "-fopenmp", "-I" + str(brewPrefix) + "/include", "-L" + str(brewPrefix) + "/lib", "-lomp"])
+			cmakeCompiler = determineCompiler(
+				["c++"],
+				"c++14",
+				[
+					"-Xpreprocessor",
+					"-fopenmp",
+					f"-I{str(brewPrefix)}/include",
+					f"-L{str(brewPrefix)}/lib",
+					"-lomp",
+				],
+			)
+
 		except:
 			pass
 	if sys.platform == "win32":
@@ -126,14 +131,14 @@ if cmakeCompiler is None:
 		# (for default compiler cl.exe). We assume that Visual Studio is installed and activated.
 		cmakeCompiler = "cl"
 		print("The default for Windows is to use cl.exe (MSVC), be sure to install and activate Visual Studio command line tools.")
-	if cmakeCompiler is None:
-		cmakeCompiler = determineCompiler(candidates, "c++14", ["-fopenmp"])
-	if cmakeCompiler is None:
-		print("ERROR: No suitable compiler found. Install any of these: ", candidates)
-		print("       If you have a suitable compiler installed, which is not a standard path, you can override detection by setting 'export NETWORKIT_OVERRIDE_CXX=<compiler-path>'")
-		if sys.platform == "darwin":
-			print("If using AppleClang, OpenMP is needed. Use brew or macports to install libomp.")
-		exit(1)
+if cmakeCompiler is None:
+	cmakeCompiler = determineCompiler(candidates, "c++14", ["-fopenmp"])
+if cmakeCompiler is None:
+	print("ERROR: No suitable compiler found. Install any of these: ", candidates)
+	print("       If you have a suitable compiler installed, which is not a standard path, you can override detection by setting 'export NETWORKIT_OVERRIDE_CXX=<compiler-path>'")
+	if sys.platform == "darwin":
+		print("If using AppleClang, OpenMP is needed. Use brew or macports to install libomp.")
+	exit(1)
 
 ################################################
 # functions for cythonizing and building networkit
@@ -146,17 +151,21 @@ def buildNetworKit(install_prefix, externalCore=False, externalTlx=None, withTes
 		pass
 	# Build cmake call
 	abs_prefix = os.path.join(os.getcwd(), install_prefix)
-	comp_cmd = ["cmake","-DCMAKE_BUILD_TYPE=Release"]
-	comp_cmd.append("-DCMAKE_INSTALL_PREFIX="+abs_prefix)
-	comp_cmd.append("-DCMAKE_CXX_COMPILER="+cmakeCompiler)
-	comp_cmd.append("-DNETWORKIT_FLATINSTALL=ON")
 	from sysconfig import get_paths, get_config_var
-	# The following cmake parameters set Python-variables. This is done to avoid differences between the 
-	# python-toolchain calling setup.py and cmake-based find-mechanisms.
-	comp_cmd.append("-DNETWORKIT_PYTHON="+get_paths()['include']) # provide python.h files
-	comp_cmd.append("-DNETWORKIT_PYTHON_EXECUTABLE="+sys.executable) # provide cmake with Python interpreter
-	comp_cmd.append("-DNETWORKIT_PYTHON_SOABI="+os_soabi) # provide lib env specification
-	comp_cmd.append("-DNETWORKIT_PYTHON_VERSION="+sysconfig.get_python_version())
+	comp_cmd = [
+		"cmake",
+		"-DCMAKE_BUILD_TYPE=Release",
+		f"-DCMAKE_INSTALL_PREFIX={abs_prefix}",
+		f"-DCMAKE_CXX_COMPILER={cmakeCompiler}",
+		"-DNETWORKIT_FLATINSTALL=ON",
+		*(
+			"-DNETWORKIT_PYTHON=" + get_paths()['include'],
+			f"-DNETWORKIT_PYTHON_EXECUTABLE={sys.executable}",
+			f"-DNETWORKIT_PYTHON_SOABI={os_soabi}",
+		),
+	]
+
+	comp_cmd.append(f"-DNETWORKIT_PYTHON_VERSION={sysconfig.get_python_version()}")
 	if externalCore:
 		if sys.platform == "win32":
 			# Reasoning: only static builds are supported and libs+dlls must reside in the same folder
@@ -164,29 +173,28 @@ def buildNetworKit(install_prefix, externalCore=False, externalTlx=None, withTes
 			exit(1)
 		comp_cmd.append("-DNETWORKIT_BUILD_CORE=OFF")
 	if sys.platform == "win32":
-		comp_cmd.append("-DNETWORKIT_STATIC=ON") # Windows only supports static core builds
-		comp_cmd.append("-DNETWORKIT_BUILDING_STATELIB=ON") # Adds dllexport
+		comp_cmd.extend(("-DNETWORKIT_STATIC=ON", "-DNETWORKIT_BUILDING_STATELIB=ON"))
 	if enable_osx_crossbuild:
 		comp_cmd.append("-DCMAKE_OSX_ARCHITECTURES='arm64'")
 	if externalTlx:
-		comp_cmd.append("-DNETWORKIT_EXT_TLX="+externalTlx)
+		comp_cmd.append(f"-DNETWORKIT_EXT_TLX={externalTlx}")
 	if ninja_available:
 		comp_cmd.append("-GNinja")
 	comp_cmd.append(os.getcwd()) #call CMakeLists.txt from networkit root
 	if rpath:
-		comp_cmd.append("-DNETWORKIT_PYTHON_RPATH="+rpath)
+		comp_cmd.append(f"-DNETWORKIT_PYTHON_RPATH={rpath}")
 	# Run cmake
 	print("initializing NetworKit compilation with: '{0}'".format(" ".join(comp_cmd)), flush=True)
-	if not subprocess.call(comp_cmd, cwd=buildDirectory) == 0:
+	if subprocess.call(comp_cmd, cwd=buildDirectory) != 0:
 		print("cmake returned an error, exiting setup.py")
 		exit(1)
 	build_cmd = []
 	if ninja_available:
-		build_cmd = ["ninja", "install", "-j"+str(jobs)]
+		build_cmd = ["ninja", "install", f"-j{str(jobs)}"]
 	else:
-		build_cmd = ["make", "install", "-j"+str(jobs)]
+		build_cmd = ["make", "install", f"-j{str(jobs)}"]
 	print("Build with: '{0}'".format(" ".join(build_cmd)), flush=True)
-	if not subprocess.call(build_cmd, cwd=buildDirectory) == 0:
+	if subprocess.call(build_cmd, cwd=buildDirectory) != 0:
 		print("Build tool returned an error, exiting setup.py")
 		exit(1)
 
@@ -249,20 +257,17 @@ class build_ext(Command):
 	def get_source_files(self):
 		sources = [ ]
 		for subdir, dirs, files in os.walk('networkit'):
-			for filename in files:
-				sources.append(os.path.join(subdir, filename))
+			sources.extend(os.path.join(subdir, filename) for filename in files)
 		return sources
 
 	# Returns the full Python module name of an extension.
 	# Prepends the ext_package setup() option to an extension (see distutils).
 	def get_ext_fullname(self, extname):
-		if self.package is not None:
-			return self.package + '.' + extname
-		return extname
+		return f'{self.package}.{extname}' if self.package is not None else extname
 
 	# Returns the file name of the DSO implementing a module (see distutils).
 	def get_ext_filename(self, fullname):
-		return fullname + '.' + os_soabi + '.so'
+		return f'{fullname}.{os_soabi}.so'
 
 	def run(self):
 		# A generic build_ext command for cmake would iterate over all self.extensions.
@@ -292,7 +297,7 @@ class build_ext(Command):
 
 		# the inplace option requires to find the package directory
 		# using the build_py command for that
-		package = '.'.join(modpath[0:-1])
+		package = '.'.join(modpath[:-1])
 		build_py = self.get_finalized_command('build_py')
 		package_dir = os.path.abspath(build_py.get_package_dir(package))
 
@@ -301,13 +306,7 @@ class build_ext(Command):
 		return os.path.join(package_dir, filename)
 
 	def get_outputs(self):
-		# And build the list of output (built) filenames.  Note that this
-		# ignores the 'inplace' flag, and assumes everything goes in the
-		# "build" tree.
-		outputs = []
-		for ext in self.extensions:
-			outputs.append(self.get_ext_fullpath(ext.name))
-		return outputs
+		return [self.get_ext_fullpath(ext.name) for ext in self.extensions]
 
 ################################################
 # initialize python setup

@@ -25,13 +25,13 @@ def setup(args = None):
 		sys.exit(0)
 
 	global READONLY
-	READONLY = not ("-w" in args)
+	READONLY = "-w" not in args
 
 	global VERBOSE
 	VERBOSE = ("-v" in args or "--verbose" in args)
 
 	global SHOW_DIFFS
-	SHOW_DIFFS = not ("-q" in args or "--nodiff" in args)
+	SHOW_DIFFS = "-q" not in args and "--nodiff" not in args
 
 def isReadonly():
 	"""

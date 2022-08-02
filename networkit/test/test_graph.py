@@ -56,7 +56,7 @@ class TestGraph(unittest.TestCase):
 		for directed in [True, False]:
 			for weighted in [True, False]:
 				g  = self.getSmallGraph(weighted, directed)
-				for i in range(10):
+				for _ in range(10):
 					u = nk.graphtools.randomNode(g)
 					g.addEdge(u, u)
 
@@ -145,8 +145,8 @@ class TestGraph(unittest.TestCase):
 		for directed in [False, True]:
 			G = self.getSmallGraph(False, directed)
 
-			results = [[] for i in range(numSeeds)]
-			for repeats in range(numRepeats):
+			results = [[] for _ in range(numSeeds)]
+			for _ in range(numRepeats):
 				for seed in range(numSeeds):
 					nk.setSeed(seed, False)
 					results[seed].append(nk.graphtools.randomEdges(G, numSamples))

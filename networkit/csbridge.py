@@ -108,7 +108,7 @@ def widget_from_graph(G, node_scores = None, node_partition = None, node_palette
 		color = palette[0];
 		for i in G.iterNodes():
 			hc_colors.append((color[0] * 255, color[1] * 255, color[2] * 255))
-	
+
 	# Set styling
 	if show_ids:
 		s = [{
@@ -130,11 +130,7 @@ def widget_from_graph(G, node_scores = None, node_partition = None, node_palette
 	nodes = []
 	edges = []
 
-	if G.isDirected():
-		edge_class = "directed "
-	else:
-		edge_class = "undirected "
-
+	edge_class = "directed " if G.isDirected() else "undirected "
 	for i in G.iterNodes():
 		n = ipycytoscape.Node(data={"id": i, "color": hc_colors[i] })
 		nodes.append(n)

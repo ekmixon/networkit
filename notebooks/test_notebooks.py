@@ -28,14 +28,17 @@ def run_notebook(path):
     errors = []
     for cell in nb.cells:
         if 'outputs' in cell:
-            for output in cell['outputs']:
-                if output.output_type == 'error':
-                    errors.append(output)
-    if errors == []:
-        print(" " + path + " test successfully completed.")
+            errors.extend(
+                output
+                for output in cell['outputs']
+                if output.output_type == 'error'
+            )
+
+    if not errors:
+        print(f" {path} test successfully completed.")
         return 0
     else:
-        print(" " + path + " test exited with errors.")
+        print(f" {path} test exited with errors.")
         return 1
 
 if __name__ == '__main__':
@@ -43,8 +46,10 @@ if __name__ == '__main__':
         raise Exception("Expected path to notebook")
     else:
         path = sys.argv[1]
-    status = 0
-    for file in os.listdir(path):
-        if file.endswith(".ipynb"):
-            status += run_notebook(os.path.join(path, file))
+    status = sum(
+        run_notebook(os.path.join(path, file))
+        for file in os.listdir(path)
+        if file.endswith(".ipynb")
+    )
+
     sys.exit(status)

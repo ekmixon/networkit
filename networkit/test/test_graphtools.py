@@ -73,7 +73,7 @@ class TestGraphTools(unittest.TestCase):
 		for directed in [True, False]:
 			for weighted in [True, False]:
 				G = self.getSmallGraph(weighted, directed)
-				for i in range(10):
+				for _ in range(10):
 					self.assertTrue(G.hasNode(nk.graphtools.randomNode(G)))
 				n = G.numberOfNodes()
 				for i in range(n):
@@ -84,7 +84,7 @@ class TestGraphTools(unittest.TestCase):
 		for directed in [True, False]:
 			for weighted in [True, False]:
 				G = self.getSmallGraph(weighted, directed)
-				for i in range(10):
+				for _ in range(10):
 					u = nk.graphtools.randomNode(G)
 					v = nk.graphtools.randomNeighbor(G, u)
 					self.assertNotEqual(G.degree(u) == 0, G.hasNode(v))
@@ -93,7 +93,7 @@ class TestGraphTools(unittest.TestCase):
 		for directed in [True, False]:
 			for weighted in [True, False]:
 				G = self.getSmallGraph(weighted, directed)
-				for i in range(10):
+				for _ in range(10):
 					u, v = nk.graphtools.randomEdge(G)
 					self.assertTrue(G.hasEdge(u, v))
 
@@ -101,7 +101,7 @@ class TestGraphTools(unittest.TestCase):
 		for directed in [True, False]:
 			for weighted in [True, False]:
 				G = self.getSmallGraph(weighted, directed)
-				for i in range(10):
+				for _ in range(10):
 					randomEdges = nk.graphtools.randomEdges(G, 5)
 					for u, v in randomEdges:
 						self.assertTrue(G.hasEdge(u, v))
@@ -193,7 +193,7 @@ class TestGraphTools(unittest.TestCase):
 	def testSubgraphFromNodesUndirected(self):
 		G = self.getSmallGraph(True, False)
 
-		nodes = set([0])
+		nodes = {0}
 		res = nk.graphtools.subgraphFromNodes(G, nodes)
 		self.assertTrue(res.isWeighted())
 		self.assertFalse(res.isDirected())
@@ -208,7 +208,7 @@ class TestGraphTools(unittest.TestCase):
 		self.assertEqual(G.weight(0, 1), 1.0)
 		self.assertEqual(G.weight(0, 2), 2.0)
 
-		nodes = set([0, 1])
+		nodes = {0, 1}
 		res = nk.graphtools.subgraphFromNodes(G, nodes)
 		self.assertEqual(res.numberOfNodes(), 2)
 		self.assertEqual(res.numberOfEdges(), 1) # 0 - 1
@@ -220,7 +220,7 @@ class TestGraphTools(unittest.TestCase):
 	def testSubgraphFromNodesDirected(self):
 		G = self.getSmallGraph(True, True)
 
-		nodes = set([0])
+		nodes = {0}
 		res = nk.graphtools.subgraphFromNodes(G, nodes)
 
 		self.assertTrue(res.isWeighted())
@@ -229,22 +229,22 @@ class TestGraphTools(unittest.TestCase):
 		self.assertEqual(res.numberOfNodes(), 1)
 		self.assertEqual(res.numberOfEdges(), 0)
 
-		nodes = set([0])
+		nodes = {0}
 		res = nk.graphtools.subgraphAndNeighborsFromNodes(G, nodes, True)
 		self.assertEqual(res.numberOfNodes(), 3)
 		self.assertEqual(res.numberOfEdges(), 2) # 0->1, 0->2, NOT 1->2
 
-		nodes = set([0, 1])
+		nodes = {0, 1}
 		res = nk.graphtools.subgraphFromNodes(G, nodes)
 		self.assertEqual(res.numberOfNodes(), 2)
 		self.assertEqual(res.numberOfEdges(), 1) # 0 -> 1
 
-		nodes = set([0, 1])
+		nodes = {0, 1}
 		res = nk.graphtools.subgraphAndNeighborsFromNodes(G, nodes, True)
 		self.assertEqual(res.numberOfNodes(), 3)
 		self.assertEqual(res.numberOfEdges(), 3) # 0->1, 0->2, 1->2
 
-		nodes = set([0, 1])
+		nodes = {0, 1}
 		res = nk.graphtools.subgraphAndNeighborsFromNodes(G, nodes, True, True)
 		self.assertEqual(res.numberOfNodes(), 4)
 		self.assertEqual(res.numberOfEdges(), 4) # 0->1, 0->2, 1->2, 3->1

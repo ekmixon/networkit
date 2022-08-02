@@ -15,7 +15,7 @@ class GraphMLSAX(xml.sax.ContentHandler):
 		""" Initializes several important variables """
 		xml.sax.ContentHandler.__init__(self)
 		self.charBuffer = []
-		self.mapping = dict()
+		self.mapping = {}
 		self.g = Graph(0)
 		self.graphName = 'unnamed'
 		self.weightedID = ''
@@ -43,8 +43,8 @@ class GraphMLSAX(xml.sax.ContentHandler):
 			if attrs.getValue("edgedefault") == "directed":
 				print("identified graph as directed")
 				self.directed = True
-			if "id" in  attrs.getNames() and not attrs.getValue("id") == '':
-					self.graphName = attrs.getValue("id")
+			if "id" in attrs.getNames() and attrs.getValue("id") != '':
+				self.graphName = attrs.getValue("id")
 			self.g = Graph(0,self.weighted, self.directed)
 		if name == "node":
 			u = self.g.addNode()

@@ -109,9 +109,7 @@ class Timer(object):
 		"""Return the current time or the time at which stop() was call,
 		if called at all.
 		"""
-		if self.__stopped is not None:
-			return self.__stopped
-		return self.__time()
+		return self.__stopped if self.__stopped is not None else self.__time()
 	
 	def __time(self):
 		"""Wrapper for time.time() to allow unit testing.
@@ -121,7 +119,7 @@ class Timer(object):
 	def __str__(self):
 		"""Nicely format the elapsed time
 		"""
-		return str(self.elapsed) + ' sec'
+		return f'{str(self.elapsed)} sec'
 
 def clockit(func):
 	"""

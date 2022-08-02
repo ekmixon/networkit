@@ -86,7 +86,6 @@ class JSONClient(object):
 			self.unflushedDumps = 0
 	def _send(self, data):
 		print('passing')
-		pass
 
 	def add_node(self, id, flush=True, **attributes):
 		"""
@@ -238,7 +237,10 @@ class GephiClient(JSONClient):
 		self.url = url
 
 	def _send(self, data):
-		conn = urllib.request.urlopen(self.url+ '?operation=updateGraph', data.encode('utf-8'))
+		conn = urllib.request.urlopen(
+			f'{self.url}?operation=updateGraph', data.encode('utf-8')
+		)
+
 		return conn.read()
 
 class GephiFileHandler(JSONClient):

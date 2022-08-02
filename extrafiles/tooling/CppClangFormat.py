@@ -37,7 +37,13 @@ def isSupported(cmd):
 def findClangFormat():
 	"""Tries to find clang-format-XXX variants within the path"""
 	cmd = "clang-format"
-	allowed = [cmd] + [cmd + "-" + str(x) for x in range(nkt.MIN_CLANG_FORMAT_VERSION, nkt.MAX_CLANG_FORMAT_VERSION + 1)]
+	allowed = [cmd] + [
+		f"{cmd}-{str(x)}"
+		for x in range(
+			nkt.MIN_CLANG_FORMAT_VERSION, nkt.MAX_CLANG_FORMAT_VERSION + 1
+		)
+	]
+
 	for candidate in allowed:
 		if isSupported(candidate):
 			if nkt.isVerbose():
@@ -81,7 +87,7 @@ with tempfile.TemporaryDirectory(dir=nkt.getNetworKitRoot()) as tempDir:
 
 		if not filecmp.cmp(file, tempFile, shallow=False):
 			numberNonCompliant += 1
-			nkt.reportChange(file + " is non-compliant")
+			nkt.reportChange(f"{file} is non-compliant")
 
 			if nkt.doReportDiff():
 				nkt.computeAndReportDiff(file, tempFile)

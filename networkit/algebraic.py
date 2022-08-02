@@ -126,10 +126,7 @@ def PageRankMatrix(G, damp=0.85):
 	stochastify = scipy.sparse.lil_matrix((n,n))
 	for v in G.iterNodes():
 		neighbors = G.degree(v)
-		if neighbors == 0:
-			stochastify[v,v] = 0.0	# TODO: check correctness
-		else:
-			stochastify[v,v] = 1.0 / neighbors
+		stochastify[v,v] = 0.0 if neighbors == 0 else 1.0 / neighbors
 	stochastify = stochastify.tocsr()
 
 	stochastic = A * stochastify
@@ -165,14 +162,10 @@ def symmetricEigenvectors(matrix, cutoff=-1, reverse=False):
 	if cutoff == -1:
 		cutoff = matrix.shape[0] - 3
 
-	if reverse:
-		mode = "SA"
-	else:
-		mode = "LA"
-
+	mode = "SA" if reverse else "LA"
 	w, v = scipy.sparse.linalg.eigsh(matrix, cutoff + 1, which=mode)
 
-	orderlist = zip(w, range(0, len(w)))
+	orderlist = zip(w, range(len(w)))
 	orderlist = sorted(orderlist)
 
 	orderedW = column(orderlist, 0)
@@ -205,14 +198,10 @@ def eigenvectors(matrix, cutoff=-1, reverse=False):
 	if cutoff == -1:
 		cutoff = matrix.shape[0] - 3
 
-	if reverse:
-		mode = "SR"
-	else:
-		mode = "LR"
-
+	mode = "SR" if reverse else "LR"
 	w, v = scipy.sparse.linalg.eigs(matrix, cutoff + 1, which=mode)
 
-	orderlist = zip(w, range(0, len(w)))
+	orderlist = zip(w, range(len(w)))
 	orderlist = sorted(orderlist)
 
 	orderedW = column(orderlist, 0)

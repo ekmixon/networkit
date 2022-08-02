@@ -30,16 +30,11 @@ def computeEdgeCut(partition, graph):
 	graph : networkit.Graph
 		The input graph.
 	"""
-	cut = 0
-
-	for (n1, n2) in graph.iterEdges():
-		if partition[n1] != partition[n2]:
-			if (graph.isWeighted()):
-				cut += graph.weight(n1,n2)
-			else:
-				cut += 1
-
-	return cut
+	return sum(
+		graph.weight(n1, n2) if (graph.isWeighted()) else 1
+		for n1, n2 in graph.iterEdges()
+		if partition[n1] != partition[n2]
+	)
 
 def computeImbalance(partition, graph):
 	"""
@@ -167,7 +162,7 @@ class SpectralPartitioner:
 			else: 
 				self.partitions[partC].append(vertex)
 
-		if (not (partition is None)):
+		if partition is not None:
 			del self.partitions[partition]
 
 	def _bisect(self, count, partition=None, iteration=1):
@@ -205,7 +200,7 @@ class SpectralPartitioner:
 			else:
 				self.partitions[partB].append(vertex)
 
-		if (not (partition is None)):
+		if partition is not None:
 			del self.partitions[partition]
 
 		if count > 2:

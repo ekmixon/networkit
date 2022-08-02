@@ -4,6 +4,7 @@ This tool iterates over all C++ files and replaces tab-based
 indentation with spaces (tabwidth = 4). If used in read-only
 mode it returns a negative exit code if a change is necessary.
 """
+
 import nktooling as nkt
 import re
 import os, sys
@@ -32,7 +33,7 @@ for file in files:
 	newGuard = re.sub("[/\.]", "_", newGuard)
 	newGuard = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', newGuard)
 	newGuard = re.sub('([a-z0-9])([A-Z])', r'\1_\2', newGuard)
-	newGuard = re.sub('__+', '_', newGuard + "_")
+	newGuard = re.sub('__+', '_', f"{newGuard}_")
 	newGuard = newGuard.upper()
 
 	rw = nkt.FileRewriter(file)
@@ -54,14 +55,13 @@ for file in files:
 				continue
 
 			# search for the first #ifndef (which we interpret as guard)
-			if oldGuard is None:
-				if sline.startswith("#ifndef"):
-					oldGuard = re.split("\\s", sline)[-1]
-					if not "_H" in oldGuard:
-						raise Exception("%s:%d expected #define of include guard. Label needs to contain '_H'. Found: %s"% (file, lineno+1, oldGuard))
-					requireDefine = True
-					labelStack = [newGuard]
-					continue
+			if oldGuard is None and sline.startswith("#ifndef"):
+				oldGuard = re.split("\\s", sline)[-1]
+				if "_H" not in oldGuard:
+					raise Exception("%s:%d expected #define of include guard. Label needs to contain '_H'. Found: %s"% (file, lineno+1, oldGuard))
+				requireDefine = True
+				labelStack = [newGuard]
+				continue
 
 			if requireDefine:
 				if not sline.startswith("#define"):
@@ -81,7 +81,7 @@ for file in files:
 
 			elif sline.startswith("#endif"):
 				label = labelStack.pop()
-				if not label is None:
+				if label is not None:
 					indent = line[:line.find("#endif")]
 					rw.write("%s#endif // %s\n" % (indent, label))
 					continue
@@ -89,10 +89,10 @@ for file in files:
 			rw.write(line)
 
 		if oldGuard is None:
-			raise Exception("%s no include guard found" % file)
+			raise Exception(f"{file} no include guard found")
 
 		if not rw.isIdentical():
-			nkt.reportChange(file + " changed.")
+			nkt.reportChange(f"{file} changed.")
 			rw.commit()
 			numNoncompliantFiles += 1
 

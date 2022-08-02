@@ -47,14 +47,9 @@ def coloringToColorList(G, coloring):
 	list(tuple(float, float, float))
 		List with color values for each node.
 	"""
-	clist = []
-
 	nColors = len(coloring.keys())
 
-	for v in G.iterNodes():
-		clist.append(float(coloring[v]) / nColors)
-
-	return clist
+	return [float(coloring[v]) / nColors for v in G.iterNodes()]
 
 
 def drawGraph(G, **kwargs):
@@ -77,7 +72,7 @@ def drawGraph(G, **kwargs):
 		print("WARNING: Multi-graph has been converted to simple graph for display")
 		G.removeMultiEdges()
 	nxG = nxadapter.nk2nx(G)
-	if not "node_size" in kwargs:
+	if "node_size" not in kwargs:
 		kwargs["node_size"] = [30+270*s for s in centrality.DegreeCentrality(G,True).run().scores()]
 	networkx.draw(nxG, **kwargs)
 
@@ -103,7 +98,7 @@ def drawCommunityGraph(G, zeta, **kwargs):
 	cg.run() # convert communities to nodes
 	graph = cg.getCoarseGraph()
 	comGraph = nxadapter.nk2nx(graph)
-	if not "node_size" in kwargs:
+	if "node_size" not in kwargs:
 		sizes = list(zeta.subsetSizeMap().values())
 		max_size = max(sizes)
 		sizes = [elem/max_size for elem in sizes]

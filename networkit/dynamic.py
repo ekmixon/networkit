@@ -21,5 +21,4 @@ def graphFromStream(stream, weighted, directed):
 	"""
 	from warnings import warn
 	warn("networkit.dynamic.graphFromStream is deprecated, use networkit.dynamics.graphFromStream")
-	G = dynamicsGraphFromStream(stream, weighted, directed)
-	return G
+	return dynamicsGraphFromStream(stream, weighted, directed)

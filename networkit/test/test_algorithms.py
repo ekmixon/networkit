@@ -9,11 +9,11 @@ import networkit as nk
 class TestSelfLoops(unittest.TestCase):
 
 	def checkCovers(self, c1, c2):
-		if not c1.numberOfElements() == c2.numberOfElements(): return False
-		if not c1.numberOfSubsets() == c2. numberOfSubsets(): return False
-		for i in range(0,c1.numberOfElements()):
-			if not c1.subsetsOf(i) == c2.subsetsOf(i): return False
-		return True
+		if c1.numberOfElements() != c2.numberOfElements(): return False
+		if c1.numberOfSubsets() != c2.numberOfSubsets(): return False
+		return all(
+			c1.subsetsOf(i) == c2.subsetsOf(i) for i in range(c1.numberOfElements())
+		)
 
 	def setUp(self):
 		# toggle the comment/uncomment to test on small or large test cases
@@ -76,7 +76,8 @@ class TestSelfLoops(unittest.TestCase):
 		# Test if the ranking is correct
 		def testTopKRanking(with_trail):
 			def zip_ranking(nodes, scores):
-				return [(node, score) for node, score in zip(nodes, scores)]
+				return list(zip(nodes, scores))
+
 			length = len(TC1.topkNodesList(with_trail))
 			self.assertEqual(CC.ranking()[:length], zip_ranking(TC1.topkNodesList(), TC1.topkScoresList()))
 			self.assertEqual(CC.ranking()[:length], zip_ranking(TC2.topkNodesList(), TC2.topkScoresList()))
@@ -254,7 +255,7 @@ class TestSelfLoops(unittest.TestCase):
 		k = 5
 
 		nk.engineering.setSeed(42, False)
-		for weighted in [False, True]:
+		for _ in [False, True]:
 			group = set()
 			while len(group) < k:
 				group.add(nk.graphtools.randomNode(g))
@@ -273,7 +274,7 @@ class TestSelfLoops(unittest.TestCase):
 		g = nk.readGraph('input/MIT8.edgelist', nk.Format.EdgeList, separator='\t', firstNode=0,
 				continuous=False, directed=False)
 		g = nk.components.ConnectedComponents(g).extractLargestConnectedComponent(g, True)
-		for weighted in [False, True]:
+		for _ in [False, True]:
 			group = set()
 			while len(group) < k:
 				group.add(nk.graphtools.randomNode(g))
@@ -291,7 +292,7 @@ class TestSelfLoops(unittest.TestCase):
 		k = 5
 
 		nk.engineering.setSeed(42, False)
-		for weighted in [False, True]:
+		for _ in [False, True]:
 			group = set()
 			while len(group) < k:
 				group.add(nk.graphtools.randomNode(g))
@@ -316,13 +317,11 @@ class TestSelfLoops(unittest.TestCase):
 		# test if partitions add up to original set
 		reconstructedSet = []
 		for i in PLMLP.getSubsetIds():
-			for j in PLMLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(PLMLP.getMembers(i)))
 		self.assertEqual(set(self.L.iterNodes()), set(reconstructedSet))
 		reconstructedSet = []
 		for i in PLMLLP.getSubsetIds():
-			for j in PLMLLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(PLMLLP.getMembers(i)))
 		self.assertEqual(set(self.LL.iterNodes()), set(reconstructedSet))
 
 	def testCommunityPL(self):
@@ -337,13 +336,11 @@ class TestSelfLoops(unittest.TestCase):
 		# test if partitions add up to original set
 		reconstructedSet = []
 		for i in PLLP.getSubsetIds():
-			for j in PLLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(PLLP.getMembers(i)))
 		self.assertEqual(set(self.L.iterNodes()), set(reconstructedSet))
 		reconstructedSet = []
 		for i in PLLLP.getSubsetIds():
-			for j in PLLLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(PLLLP.getMembers(i)))
 		self.assertEqual(set(self.LL.iterNodes()), set(reconstructedSet))
 
 	def testCommunityPLP(self):
@@ -358,13 +355,11 @@ class TestSelfLoops(unittest.TestCase):
 		# test if partitions add up to original set
 		reconstructedSet = []
 		for i in PLPLP.getSubsetIds():
-			for j in PLPLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(PLPLP.getMembers(i)))
 		self.assertEqual(set(self.L.iterNodes()), set(reconstructedSet))
 		reconstructedSet = []
 		for i in PLPLLP.getSubsetIds():
-			for j in PLPLLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(PLPLLP.getMembers(i)))
 		self.assertEqual(set(self.LL.iterNodes()), set(reconstructedSet))
 
 
@@ -380,13 +375,11 @@ class TestSelfLoops(unittest.TestCase):
 		# test if partitions add up to original set
 		reconstructedSet = []
 		for i in CLP.getSubsetIds():
-			for j in CLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(CLP.getMembers(i)))
 		self.assertEqual(set(self.L.iterNodes()), set(reconstructedSet))
 		reconstructedSet = []
 		for i in CLLP.getSubsetIds():
-			for j in CLLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(CLLP.getMembers(i)))
 		self.assertEqual(set(self.LL.iterNodes()), set(reconstructedSet))
 
 
@@ -447,13 +440,11 @@ class TestSelfLoops(unittest.TestCase):
 		# test if partitions add up to original set
 		reconstructedSet = []
 		for i in CLP.getSubsetIds():
-			for j in CLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(CLP.getMembers(i)))
 		self.assertEqual(set(self.L.iterNodes()), set(reconstructedSet))
 		reconstructedSet = []
 		for i in CLLP.getSubsetIds():
-			for j in CLLP.getMembers(i):
-				reconstructedSet.append(j)
+			reconstructedSet.extend(iter(CLLP.getMembers(i)))
 		self.assertEqual(set(self.LL.iterNodes()), set(reconstructedSet))
 
 	def testCommunityModularity(self):

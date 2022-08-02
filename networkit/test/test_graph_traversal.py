@@ -36,7 +36,7 @@ class TestTraversal(unittest.TestCase):
 				queue.append(source)
 				visited[source] = True
 
-			while len(queue) > 0:
+			while queue:
 				u = queue.pop(0)
 				sequence.append(u)
 				for v in G.iterNeighbors(u):
@@ -47,7 +47,7 @@ class TestTraversal(unittest.TestCase):
 
 			return sequence, edgeSequence
 
-		randNodes = [x for x in range(n)]
+		randNodes = list(range(n))
 
 		for seed in range(1, 4):
 			nk.setSeed(seed, False)
@@ -82,7 +82,7 @@ class TestTraversal(unittest.TestCase):
 			visited[source] = 1
 			stack = [source]
 
-			while len(stack) > 0:
+			while stack:
 				u = stack.pop()
 				sequence.append(u)
 				for v in G.iterNeighbors(u):
@@ -112,7 +112,7 @@ class TestTraversal(unittest.TestCase):
 	def testDijkstraFrom(self):
 		n = 100
 		p = 0.15
-		randNodes = [i for i in range(n)]
+		randNodes = list(range(n))
 
 		for weighted in [False, True]:
 			for directed in [False, True]:

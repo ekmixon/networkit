@@ -4,6 +4,7 @@ This tool iterates over all C++ files and replaces tab-based
 indentation with spaces (tabwidth = 4). If used in read-only
 mode it returns a negative exit code if a change is necessary.
 """
+
 import nktooling as nkt
 import sys
 
@@ -20,10 +21,10 @@ for file in files:
 		x = 0
 		skip = 0
 		for (i, c) in enumerate(line):
-			if c == '\t':
-				x += TabWidth - (x % TabWidth)
-			elif c == ' ':
+			if c == ' ':
 				x += 1
+			elif c == '\t':
+				x += TabWidth - (x % TabWidth)
 			else:
 				skip = i
 				break
@@ -31,7 +32,7 @@ for file in files:
 		rw.write((" " * int(x)) + line[i:])
 
 	if not rw.isIdentical():
-		nkt.reportChange(file + " is (partially) indented with tabs")
+		nkt.reportChange(f"{file} is (partially) indented with tabs")
 		rw.commit()
 		noncompliantFiles += 1
 

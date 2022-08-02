@@ -27,10 +27,10 @@ def bfsSample(G, source=None, k = 50):
 	n = G.numberOfNodes()
 	visited = [False]*n
 	Q = [source]
-	closest = set([source])
+	closest = {source}
 	global found
 	found = 0
-	while len(Q) > 0 and found < k:
+	while Q and found < k:
 		u = Q.pop(0)
 		def enqueue(u,v,weight, eid):
 			global found

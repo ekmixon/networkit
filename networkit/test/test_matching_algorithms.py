@@ -19,10 +19,9 @@ class TestMatchingAlgorithms(unittest.TestCase):
 		self.gw = self.generateRandomWeights(self.g)
 
 	def hasUnmatchedNeighbors(self, g, m):
-		for e in g.iterEdges():
-			if not m.isMatched(e[0]) and not m.isMatched(e[1]):
-				return True
-		return False
+		return any(
+			not m.isMatched(e[0]) and not m.isMatched(e[1]) for e in g.iterEdges()
+		)
 
 	def testPathGrowingMatcher(self):
 		def runAlgo(g):

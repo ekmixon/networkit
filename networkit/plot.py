@@ -97,7 +97,7 @@ def connectedComponentsSizes(G, **kwargs):
 	data = list(csizes.values())
 	# explode the largest component pie piece
 	maxi = data.index(max(data))
-	explode = [0 for i in range(len(data))]
+	explode = [0 for _ in range(len(data))]
 	explode[maxi] = 0.1
 	# plot
 	plt.figure(figsize=(5,5))

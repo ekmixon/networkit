@@ -40,11 +40,11 @@ class Test_SCD(unittest.TestCase):
 				("Clique", nk.scd.CliqueDetect(self.G))]:
 			result = algo.run(seeds)[seed]
 
-			self.assertGreaterEqual(len(result), 1, "{} has empty community".format(name))
+			self.assertGreaterEqual(len(result), 1, f"{name} has empty community")
 
 			cond = nk.scd.SetConductance(self.G, result).run().getConductance()
 
-			self.assertLessEqual(cond, 0.5, "{} has too large conductance".format(name))
+			self.assertLessEqual(cond, 0.5, f"{name} has too large conductance")
 
 if __name__ == "__main__":
 	unittest.main()
